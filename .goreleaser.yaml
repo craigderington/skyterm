@@ -1,0 +1,84 @@
+version: 2
+
+project_name: skyterm
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: skyterm
+    main: ./cmd/skyterm
+    binary: skyterm
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - id: skyterm
+    builds:
+      - skyterm
+    format: zip
+    wrap_in_directory: true
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+    files:
+      - README.md
+      - LICENSE*
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+
+dockers:
+  # linux/amd64 image
+  - id: skyterm-amd64
+    use: buildx
+    goos: linux
+    goarch: amd64
+    image_templates:
+      - ghcr.io/craigderington/skyterm:{{ .Tag }}-amd64
+      - ghcr.io/craigderington/skyterm:latest-amd64
+    dockerfile: Dockerfile.goreleaser
+    build_flag_templates:
+      - "--platform=linux/amd64"
+      - "--pull"
+
+  # linux/arm64 image
+  - id: skyterm-arm64
+    use: buildx
+    goos: linux
+    goarch: arm64
+    image_templates:
+      - ghcr.io/craigderington/skyterm:{{ .Tag }}-arm64
+      - ghcr.io/craigderington/skyterm:latest-arm64
+    dockerfile: Dockerfile.goreleaser
+    build_flag_templates:
+      - "--platform=linux/arm64"
+      - "--pull"
+
+docker_manifests:
+  - name_template: ghcr.io/craigderington/skyterm:{{ .Tag }}
+    image_templates:
+      - ghcr.io/craigderington/skyterm:{{ .Tag }}-amd64
+      - ghcr.io/craigderington/skyterm:{{ .Tag }}-arm64
+  - name_template: ghcr.io/craigderington/skyterm:latest
+    image_templates:
+      - ghcr.io/craigderington/skyterm:latest-amd64
+      - ghcr.io/craigderington/skyterm:latest-arm64
+

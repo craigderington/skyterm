@@ -36,11 +36,12 @@ type keyMap struct {
 	Magnitude      key.Binding
 
 	// Selection and interaction
-	Select key.Binding
-	Info   key.Binding
-	Center key.Binding
-	Follow key.Binding
-	Search key.Binding
+	Select     key.Binding
+	Info       key.Binding
+	ViewImage  key.Binding
+	Center     key.Binding
+	Follow     key.Binding
+	Search     key.Binding
 
 	// Time controls
 	PauseResume    key.Binding
@@ -171,6 +172,10 @@ func newKeyMap() keyMap {
 		Info: key.NewBinding(
 			key.WithKeys("i"),
 			key.WithHelp("i", "toggle info"),
+		),
+		ViewImage: key.NewBinding(
+			key.WithKeys("v"),
+			key.WithHelp("v", "view image"),
 		),
 		Center: key.NewBinding(
 			key.WithKeys("c"),

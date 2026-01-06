@@ -1,0 +1,6 @@
+FROM gcr.io/distroless/static:nonroot
+WORKDIR /
+COPY skyterm /usr/local/bin/skyterm
+USER nonroot:nonroot
+ENTRYPOINT ["/usr/local/bin/skyterm"]
+

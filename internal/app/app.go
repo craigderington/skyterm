@@ -39,11 +39,13 @@ type Model struct {
 
 	// Interaction state
 	selectedObject *SelectedObject
+	objectInfo     *ui.ObjectInfo // Info for selected object, including image
 	following      bool
 	searchMode     bool
 	searchQuery    string
 	timeInputMode  bool
 	timeInput      string
+	imageViewMode  bool // True when viewing fullscreen image
 
 	// Time and location
 	currentTime    time.Time
@@ -138,7 +140,28 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.canvas = render.NewCanvas(m.width, m.height)
 		return m, nil
 
+	case ImageFetchedMsg:
+		// Update object info with fetched image
+		if m.objectInfo != nil && m.objectInfo.Name == msg.ObjectName {
+			m.objectInfo.ImageLoading = false
+			m.objectInfo.ImageInfo = msg.ImageInfo
+			m.objectInfo.ImageData = msg.RenderedData
+			m.objectInfo.ImageError = msg.Error
+		}
+		return m, nil
+
 	case tea.KeyMsg:
+		// Handle image viewer mode (highest priority)
+		if m.imageViewMode {
+			switch msg.String() {
+			case "esc", "v", "q":
+				m.imageViewMode = false
+				return m, nil
+			}
+			// Ignore all other keys in viewer mode
+			return m, nil
+		}
+
 		// Handle time input mode
 		if m.timeInputMode {
 			switch msg.String() {
@@ -228,7 +251,36 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 
 		case key.Matches(msg, m.keys.Info):
+			wasShowing := m.showInfo
 			m.showInfo = !m.showInfo
+
+			// If we just toggled info on and have a selected object, fetch image
+			if !wasShowing && m.showInfo && m.selectedObject != nil {
+				// Create initial ObjectInfo
+				m.objectInfo = &ui.ObjectInfo{
+					Type:         m.selectedObject.Type,
+					Name:         m.selectedObject.Name,
+					Star:         m.selectedObject.Star,
+					Planet:       m.selectedObject.Planet,
+					DeepSky:      m.selectedObject.DeepSky,
+					ImageLoading: true,
+				}
+				// Trigger async image fetch
+				return m, fetchImageCmd(m.selectedObject.Name)
+			}
+
+			// If toggling off, clear object info
+			if !m.showInfo {
+				m.objectInfo = nil
+			}
+
+			return m, nil
+
+		case key.Matches(msg, m.keys.ViewImage):
+			// Toggle image viewer mode if we have an image
+			if m.objectInfo != nil && m.objectInfo.ImageData != "" {
+				m.imageViewMode = !m.imageViewMode
+			}
 			return m, nil
 
 		case key.Matches(msg, m.keys.Center):
@@ -368,6 +420,11 @@ func (m Model) View() string {
 		return "Initializing..."
 	}
 
+	// Show fullscreen image viewer if in viewer mode
+	if m.imageViewMode && m.objectInfo != nil {
+		return ui.RenderImageViewer(m.objectInfo, m.width, m.height+2)
+	}
+
 	// Show time input modal if in time input mode
 	if m.timeInputMode {
 		return ui.RenderTimeInput(m.timeInput, m.width, m.height+2)
@@ -460,16 +517,8 @@ func (m Model) View() string {
 	view := lipgloss.JoinVertical(lipgloss.Left, skyView, statusBar)
 
 	// Overlay info panel if requested
-	if m.showInfo && m.selectedObject != nil {
-		// Convert to ui.ObjectInfo
-		info := &ui.ObjectInfo{
-			Type:    m.selectedObject.Type,
-			Name:    m.selectedObject.Name,
-			Star:    m.selectedObject.Star,
-			Planet:  m.selectedObject.Planet,
-			DeepSky: m.selectedObject.DeepSky,
-		}
-		infoPanel := ui.RenderInfoPanel(info, m.observer, m.width, m.height+2)
+	if m.showInfo && m.objectInfo != nil {
+		infoPanel := ui.RenderInfoPanel(m.objectInfo, m.observer, m.width, m.height+2)
 		// Overlay the panel on top of the view
 		view = lipgloss.Place(
 			m.width,
