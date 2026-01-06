@@ -41,6 +41,22 @@ A beautiful, real-time terminal-based astronomy application that brings the nigh
 - Planet and star labels
 - Info panel for selected objects
 
+## 🚀 Quick Install
+
+### 🔹 Download Prebuilt Binaries
+
+Head over to the **Releases** page and grab the right ZIP for your platform:
+
+- **Linux**: `skyterm_<version>_linux_*.zip`
+- **macOS**: `skyterm_<version>_darwin_*.zip`
+- **Windows**: `skyterm_<version>_windows_*.zip`
+
+Unzip, then run:
+
+```bash
+./skyterm        # Linux/macOS
+skyterm.exe      # Windows
+
 ## Quick Start
 
 ```bash
