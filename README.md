@@ -56,6 +56,7 @@ Unzip, then run:
 ```bash
 ./skyterm        # Linux/macOS
 skyterm.exe      # Windows
+```
 
 ## Quick Start
 
