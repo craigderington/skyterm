@@ -4,7 +4,7 @@
 
 A beautiful, real-time terminal-based astronomy application that brings the night sky to your command line. Built with Go and the Bubbletea framework, skyterm delivers a stunning celestial experience without leaving your terminal.
 
-![skyterm screenshot](https://raw.githubusercontent.com/craigderington/skyterm/refs/heads/master/screenshots/screenshot-2026-01-04_18-21-05.png)
+![skyterm screenshot](https://raw.githubusercontent.com/craigderington/skyterm/refs/heads/master/screenshots/screenshot-2026-01-07_16-13-35.png)
 
 ## Why skyterm?
 
